@@ -1,0 +1,12 @@
+node_modules
+data
+.env
+.env.*
+.git
+.gitignore
+*.log
+npm-debug.log*
+tests
+test-integration.js
+.DS_Store
+Thumbs.db
