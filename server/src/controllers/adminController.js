@@ -353,3 +353,16 @@ export const updateSettings = async (req, res, next) => {
     next(err);
   }
 };
+
+export const getAttendanceSummary = async (req, res, next) => {
+  try {
+    const { getAdminAttendanceSummary } = await import('../services/attendanceService.js');
+    const summary = await getAdminAttendanceSummary(req.query);
+    return successResponse(res, {
+      message: 'Institutional attendance summary retrieved successfully',
+      data: summary
+    });
+  } catch (err) {
+    next(err);
+  }
+};

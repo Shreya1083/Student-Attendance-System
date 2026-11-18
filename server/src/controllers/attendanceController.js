@@ -119,3 +119,24 @@ export const deleteSession = async (req, res) => {
     return handleError(res, err);
   }
 };
+
+// ─── GET /api/v1/attendance/assignment/:assignmentId/report ───────────────
+/**
+ * Get comprehensive attendance report and defaulters for an assignment.
+ */
+export const getAssignmentReport = async (req, res) => {
+  try {
+    const report = await attendanceService.getAssignmentReport(
+      req.params.assignmentId,
+      req.user._id,
+      req.user.role
+    );
+
+    return successResponse(res, {
+      message: 'Assignment attendance report generated successfully',
+      data: report
+    });
+  } catch (err) {
+    return handleError(res, err);
+  }
+};

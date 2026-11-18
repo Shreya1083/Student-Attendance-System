@@ -19,6 +19,12 @@ router.get(
   attendanceController.getEnrolledStudents
 );
 
+// GET /api/v1/attendance/assignment/:assignmentId/report
+router.get(
+  '/assignment/:assignmentId/report',
+  attendanceController.getAssignmentReport
+);
+
 // ─── Sessions ────────────────────────────────────────────────────────────
 // POST /api/v1/attendance/sessions
 router.post(

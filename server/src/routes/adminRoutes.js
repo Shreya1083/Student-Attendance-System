@@ -89,4 +89,9 @@ router.delete('/assignments/:id', adminController.deleteAssignment);
 router.get('/settings', adminController.getSettings);
 router.put('/settings', adminController.updateSettings);
 
+// ==========================================
+// Attendance Reports
+// ==========================================
+router.get('/attendance/summary', adminController.getAttendanceSummary);
+
 export default router;

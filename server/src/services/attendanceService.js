@@ -2,8 +2,11 @@ import mongoose from 'mongoose';
 import Faculty from '../models/Faculty.js';
 import FacultyAssignment from '../models/FacultyAssignment.js';
 import Student from '../models/Student.js';
+import Subject from '../models/Subject.js';
 import AttendanceSession from '../models/AttendanceSession.js';
 import AttendanceRecord from '../models/AttendanceRecord.js';
+import Notification from '../models/Notification.js';
+import SystemSetting from '../models/SystemSetting.js';
 
 // ─── Helper ───────────────────────────────────────────────────────────────
 const throwError = (msg, code = 400) => {
@@ -160,6 +163,15 @@ export const createSession = async (data, userId) => {
   session.lateCount = lateCount;
   await session.save();
 
+  // Trigger low-attendance background evaluation for cohort
+  checkAndNotifyLowAttendance(
+    assignment.subjectId._id,
+    assignment.department,
+    assignment.semester,
+    assignment.section,
+    assignment.academicYear
+  ).catch((err) => console.error('Low-attendance alert evaluation error:', err));
+
   // 8. Return populated session
   return AttendanceSession.findById(session._id)
     .populate('subjectId', 'subjectCode name credits')
@@ -303,4 +315,222 @@ export const deleteSession = async (sessionId, userId) => {
   await AttendanceSession.findByIdAndDelete(sessionId);
 
   return { message: `Session and ${session.totalStudents} attendance record(s) deleted successfully.` };
+};
+
+// ─── 7. Low-attendance background check & notification generation ────────
+export const checkAndNotifyLowAttendance = async (
+  subjectId,
+  department,
+  semester,
+  section,
+  academicYear
+) => {
+  try {
+    const setting = await SystemSetting.findOne({ key: 'LOW_ATTENDANCE_THRESHOLD' });
+    const threshold = setting && setting.value ? Number(setting.value) : 75;
+
+    const sessions = await AttendanceSession.find({
+      subjectId,
+      department,
+      semester,
+      section,
+      academicYear
+    });
+
+    const totalSessions = sessions.length;
+    if (totalSessions === 0) return;
+
+    const sessionIds = sessions.map((s) => s._id);
+
+    const students = await Student.find({
+      department,
+      semester,
+      section,
+      academicYear,
+      isActive: true
+    }).populate('userId', 'name email');
+
+    const subject = await Subject.findById(subjectId);
+
+    for (const student of students) {
+      const records = await AttendanceRecord.find({
+        sessionId: { $in: sessionIds },
+        studentId: student._id
+      });
+
+      const attended = records.filter(
+        (r) => r.status === 'PRESENT' || r.status === 'LATE'
+      ).length;
+
+      const percentage = Number(((attended / totalSessions) * 100).toFixed(1));
+
+      if (percentage < threshold) {
+        const existingAlert = await Notification.findOne({
+          studentId: student._id,
+          subjectId,
+          isRead: false
+        });
+
+        if (!existingAlert) {
+          await Notification.create({
+            studentId: student._id,
+            subjectId,
+            message: `Attendance warning: Your attendance in ${subject?.name || 'Subject'} (${subject?.subjectCode || ''}) is currently ${percentage}%, which is below the required ${threshold}% threshold.`,
+            type: 'LOW_ATTENDANCE',
+            attendancePct: percentage,
+            isRead: false
+          });
+        }
+      }
+    }
+  } catch (err) {
+    console.error('Error in checkAndNotifyLowAttendance:', err.message);
+  }
+};
+
+// ─── 8. Assignment Attendance Report (Faculty / Admin) ────────────────────
+export const getAssignmentReport = async (assignmentId, userId, userRole = 'FACULTY') => {
+  const assignment = await FacultyAssignment.findById(assignmentId)
+    .populate('subjectId', 'subjectCode name credits')
+    .populate('facultyId', 'facultyCode department');
+
+  if (!assignment) throwError('Assignment not found.', 404);
+
+  // If role is FACULTY, verify ownership
+  if (userRole === 'FACULTY') {
+    const faculty = await resolveFaculty(userId);
+    if (assignment.facultyId._id.toString() !== faculty._id.toString()) {
+      throwError('You are not authorized to view reports for this assignment.', 403);
+    }
+  }
+
+  const setting = await SystemSetting.findOne({ key: 'LOW_ATTENDANCE_THRESHOLD' });
+  const threshold = setting && setting.value ? Number(setting.value) : 75;
+
+  const sessions = await AttendanceSession.find({
+    subjectId: assignment.subjectId._id,
+    department: assignment.department,
+    semester: assignment.semester,
+    section: assignment.section,
+    academicYear: assignment.academicYear
+  }).sort({ date: -1 });
+
+  const totalSessions = sessions.length;
+  const sessionIds = sessions.map((s) => s._id);
+
+  const students = await Student.find({
+    department: assignment.department,
+    semester: assignment.semester,
+    section: assignment.section,
+    academicYear: assignment.academicYear,
+    isActive: true
+  })
+    .populate('userId', 'name email')
+    .sort({ rollNumber: 1 });
+
+  let totalAttendedAll = 0;
+  const studentReports = [];
+
+  for (const st of students) {
+    const records = await AttendanceRecord.find({
+      sessionId: { $in: sessionIds },
+      studentId: st._id
+    });
+
+    const presentCount = records.filter((r) => r.status === 'PRESENT').length;
+    const lateCount = records.filter((r) => r.status === 'LATE').length;
+    const absentCount = records.filter((r) => r.status === 'ABSENT').length;
+    const attended = presentCount + lateCount;
+
+    const percentage =
+      totalSessions > 0 ? Number(((attended / totalSessions) * 100).toFixed(1)) : 100.0;
+
+    const isDefaulter = totalSessions > 0 && percentage < threshold;
+    totalAttendedAll += attended;
+
+    studentReports.push({
+      studentId: st._id,
+      name: st.userId?.name || 'Student',
+      email: st.userId?.email || '',
+      rollNumber: st.rollNumber,
+      totalSessions,
+      attended,
+      presentCount,
+      lateCount,
+      absentCount,
+      percentage,
+      isDefaulter
+    });
+  }
+
+  const totalPossible = students.length * totalSessions;
+  const classAverage =
+    totalPossible > 0 ? Number(((totalAttendedAll / totalPossible) * 100).toFixed(1)) : 100.0;
+
+  const defaulters = studentReports.filter((s) => s.isDefaulter);
+
+  return {
+    assignment: {
+      _id: assignment._id,
+      subject: assignment.subjectId,
+      department: assignment.department,
+      semester: assignment.semester,
+      section: assignment.section,
+      academicYear: assignment.academicYear,
+      faculty: assignment.facultyId
+    },
+    threshold,
+    totalSessionsConducted: totalSessions,
+    totalStudents: students.length,
+    defaulterCount: defaulters.length,
+    classAveragePercentage: classAverage,
+    defaulters,
+    students: studentReports
+  };
+};
+
+// ─── 9. Comprehensive Admin Attendance Summary Report ────────────────────
+export const getAdminAttendanceSummary = async (query = {}) => {
+  const setting = await SystemSetting.findOne({ key: 'LOW_ATTENDANCE_THRESHOLD' });
+  const threshold = setting && setting.value ? Number(setting.value) : 75;
+
+  const filter = {};
+  if (query.department) filter.department = query.department.toUpperCase();
+  if (query.semester)   filter.semester = Number(query.semester);
+  if (query.section)    filter.section = query.section.toUpperCase();
+  if (query.academicYear) filter.academicYear = query.academicYear;
+
+  const assignments = await FacultyAssignment.find({ ...filter, isActive: true })
+    .populate('subjectId', 'subjectCode name credits')
+    .populate('facultyId', 'facultyCode department')
+    .sort({ department: 1, semester: 1, section: 1 });
+
+  const summary = [];
+  let totalDefaultersOverall = 0;
+
+  for (const as of assignments) {
+    const report = await getAssignmentReport(as._id, null, 'ADMIN');
+    totalDefaultersOverall += report.defaulterCount;
+    summary.push({
+      assignmentId: as._id,
+      subjectCode: as.subjectId?.subjectCode,
+      subjectName: as.subjectId?.name,
+      department: as.department,
+      semester: as.semester,
+      section: as.section,
+      academicYear: as.academicYear,
+      facultyCode: as.facultyId?.facultyCode,
+      totalSessions: report.totalSessionsConducted,
+      totalStudents: report.totalStudents,
+      defaulterCount: report.defaulterCount,
+      classAverage: report.classAveragePercentage
+    });
+  }
+
+  return {
+    threshold,
+    totalAssignments: assignments.length,
+    totalDefaulters: totalDefaultersOverall,
+    reports: summary
+  };
 };

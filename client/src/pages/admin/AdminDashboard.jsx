@@ -12,12 +12,15 @@ import {
   AlertCircle,
   Loader2,
   RefreshCw,
-  Plus
+  Plus,
+  BarChart3,
+  AlertTriangle
 } from 'lucide-react';
 import api from '../../services/api.js';
 
 export const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
+  const [attendanceSummary, setAttendanceSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -25,8 +28,14 @@ export const AdminDashboard = () => {
     setLoading(true);
     setError('');
     try {
-      const res = await api.get('/admin/stats');
+      const [res, attRes] = await Promise.all([
+        api.get('/admin/stats'),
+        api.get('/admin/attendance/summary').catch(() => ({ data: null }))
+      ]);
       setStats(res.data);
+      if (attRes?.data) {
+        setAttendanceSummary(attRes.data);
+      }
     } catch (err) {
       setError(err.message || 'Failed to load dashboard metrics');
     } finally {
@@ -209,6 +218,77 @@ export const AdminDashboard = () => {
           )}
         </div>
       </div>
+
+      {/* Institutional Attendance & Defaulter Reports */}
+      {attendanceSummary && attendanceSummary.reports && (
+        <div className="bg-white rounded-2xl border border-slate-200/80 p-6 space-y-4 shadow-sm">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <div>
+              <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                <BarChart3 className="w-4 h-4 text-emerald-600" />
+                Institutional Attendance & Defaulters Summary
+              </h2>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Class averages and low-attendance alerts across all departments and assigned courses
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                {attendanceSummary.totalDefaulters} Total Defaulter(s)
+              </span>
+              <span className="px-2.5 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-brand-700 border border-indigo-200">
+                Threshold: {attendanceSummary.threshold}%
+              </span>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider border-y border-slate-100">
+                <tr>
+                  <th className="py-3 px-3">Subject</th>
+                  <th className="py-3 px-3">Cohort</th>
+                  <th className="py-3 px-3">Faculty Code</th>
+                  <th className="py-3 px-3">Conducted</th>
+                  <th className="py-3 px-3">Enrolled</th>
+                  <th className="py-3 px-3">Class Avg</th>
+                  <th className="py-3 px-3">Defaulters</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700">
+                {attendanceSummary.reports.map((r) => (
+                  <tr key={r.assignmentId} className="hover:bg-slate-50 transition-colors">
+                    <td className="py-3 px-3 font-medium text-slate-900">
+                      <span className="font-mono font-bold text-brand-600 block">{r.subjectCode}</span>
+                      <span className="text-[11px] text-slate-500">{r.subjectName}</span>
+                    </td>
+                    <td className="py-3 px-3 font-mono">
+                      {r.department} Sem-{r.semester} ({r.section})
+                    </td>
+                    <td className="py-3 px-3 font-mono">{r.facultyCode || '-'}</td>
+                    <td className="py-3 px-3 font-bold font-mono">{r.totalSessions}</td>
+                    <td className="py-3 px-3 font-bold font-mono">{r.totalStudents}</td>
+                    <td className="py-3 px-3">
+                      <span className={`font-bold font-mono ${r.classAverage < attendanceSummary.threshold ? 'text-rose-600' : 'text-emerald-600'}`}>
+                        {r.totalSessions === 0 ? 'No Data' : `${r.classAverage}%`}
+                      </span>
+                    </td>
+                    <td className="py-3 px-3">
+                      {r.defaulterCount > 0 ? (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                          {r.defaulterCount} student(s)
+                        </span>
+                      ) : (
+                        <span className="text-slate-400">None</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

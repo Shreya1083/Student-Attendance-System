@@ -16,7 +16,10 @@ import {
   ChevronDown,
   ChevronUp,
   Edit3,
-  Trash2
+  Trash2,
+  BarChart3,
+  TrendingUp,
+  AlertTriangle
 } from 'lucide-react';
 import api from '../../services/api.js';
 
@@ -93,6 +96,28 @@ export const MarkAttendance = () => {
   const [editMap, setEditMap]                = useState({});   // recordId → status
   const [savingEdit, setSavingEdit]          = useState(false);
   const [deletingId, setDeletingId]          = useState(null);
+
+  // ── Attendance Report State ──
+  const [showReport, setShowReport] = useState(false);
+  const [reportData, setReportData] = useState(null);
+  const [loadingReport, setLoadingReport] = useState(false);
+
+  const fetchReport = useCallback(async () => {
+    if (!assignmentId) return;
+    setLoadingReport(true);
+    try {
+      const res = await api.get(`/attendance/assignment/${assignmentId}/report`);
+      setReportData(res.data);
+    } catch (err) {
+      console.error('Failed to load report:', err);
+    } finally {
+      setLoadingReport(false);
+    }
+  }, [assignmentId]);
+
+  useEffect(() => {
+    if (showReport) fetchReport();
+  }, [showReport, fetchReport]);
 
   // ── Bootstrap: load enrolled students + assignment ──
   useEffect(() => {
@@ -568,6 +593,123 @@ export const MarkAttendance = () => {
                     )}
                   </div>
                 )}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* ── Attendance & Defaulter Report Panel ── */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <button
+          type="button"
+          onClick={() => setShowReport((v) => !v)}
+          className="w-full px-6 py-4 flex items-center justify-between hover:bg-slate-50 transition-colors"
+        >
+          <div className="flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-emerald-600" />
+            <span className="text-sm font-bold text-slate-900">Class Attendance & Defaulter Report</span>
+            {reportData && (
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${reportData.defaulterCount > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>
+                {reportData.defaulterCount} Defaulter(s) &bull; Avg {reportData.classAveragePercentage}%
+              </span>
+            )}
+          </div>
+          {showReport ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+        </button>
+
+        {showReport && (
+          <div className="border-t border-slate-100 p-6 space-y-6">
+            {loadingReport ? (
+              <div className="py-8 flex justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-emerald-600" />
+              </div>
+            ) : !reportData ? (
+              <div className="py-8 text-center text-slate-400 text-sm">Failed to load report data.</div>
+            ) : (
+              <div className="space-y-6">
+                {/* Summary Metrics Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Class Average</span>
+                    <span className="text-2xl font-extrabold text-slate-900 font-mono mt-1 block">
+                      {reportData.classAveragePercentage}%
+                    </span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Conducted Sessions</span>
+                    <span className="text-2xl font-extrabold text-slate-900 font-mono mt-1 block">
+                      {reportData.totalSessionsConducted}
+                    </span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Enrolled Students</span>
+                    <span className="text-2xl font-extrabold text-slate-900 font-mono mt-1 block">
+                      {reportData.totalStudents}
+                    </span>
+                  </div>
+                  <div className="p-4 rounded-xl bg-slate-50 border border-slate-100">
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Defaulters (&lt; {reportData.threshold}%)</span>
+                    <span className={`text-2xl font-extrabold font-mono mt-1 block ${reportData.defaulterCount > 0 ? 'text-rose-600' : 'text-emerald-600'}`}>
+                      {reportData.defaulterCount}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Defaulter Alert Warning */}
+                {reportData.defaulterCount > 0 && (
+                  <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs sm:text-sm flex items-start gap-3">
+                    <AlertTriangle className="w-5 h-5 text-rose-600 flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="font-bold text-rose-900">Attendance Shortage Notice</p>
+                      <p className="mt-0.5 text-xs text-rose-700">
+                        {reportData.defaulterCount} student(s) currently have attendance below the institutional cutoff ({reportData.threshold}%). In-app early warning notifications have been dispatched.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Student Attendance Breakdown Table */}
+                <div className="overflow-x-auto border border-slate-200 rounded-xl">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
+                      <tr>
+                        <th className="py-2.5 px-3">USN / Roll No</th>
+                        <th className="py-2.5 px-3">Student Name</th>
+                        <th className="py-2.5 px-3 text-center">Present</th>
+                        <th className="py-2.5 px-3 text-center">Late</th>
+                        <th className="py-2.5 px-3 text-center">Absent</th>
+                        <th className="py-2.5 px-3 text-center">Attended / Total</th>
+                        <th className="py-2.5 px-3 text-center">Percentage</th>
+                        <th className="py-2.5 px-3 text-center">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 text-slate-700">
+                      {reportData.students.map((st) => (
+                        <tr key={st.studentId} className={st.isDefaulter ? 'bg-rose-50/40' : 'hover:bg-slate-50'}>
+                          <td className="py-2.5 px-3 font-mono font-bold text-slate-900">{st.rollNumber}</td>
+                          <td className="py-2.5 px-3 font-medium text-slate-800">{st.name}</td>
+                          <td className="py-2.5 px-3 text-center font-mono text-emerald-600">{st.presentCount}</td>
+                          <td className="py-2.5 px-3 text-center font-mono text-amber-600">{st.lateCount}</td>
+                          <td className="py-2.5 px-3 text-center font-mono text-rose-600">{st.absentCount}</td>
+                          <td className="py-2.5 px-3 text-center font-mono font-bold">
+                            {st.attended} / {st.totalSessions}
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className={`font-mono font-bold text-sm ${st.isDefaulter ? 'text-rose-600' : 'text-emerald-600'}`}>
+                              {st.percentage}%
+                            </span>
+                          </td>
+                          <td className="py-2.5 px-3 text-center">
+                            <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${st.isDefaulter ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-emerald-100 text-emerald-700 border-emerald-200'}`}>
+                              {st.isDefaulter ? 'Defaulter' : 'Eligible'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             )}
           </div>
