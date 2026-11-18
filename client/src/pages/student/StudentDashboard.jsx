@@ -25,7 +25,7 @@ export const StudentDashboard = () => {
         <div className="space-y-2">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 text-xs font-semibold">
             <Bell className="w-3.5 h-3.5" />
-            <span>Student Portal • Phase 2 Verified</span>
+            <span>Student Academic Portal • Semester Active</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Welcome, {user?.name || 'Student'}
@@ -97,22 +97,22 @@ export const StudentDashboard = () => {
       <div className="bg-white rounded-2xl border border-slate-200/80 p-6 space-y-4 shadow-sm">
         <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
           <PieChart className="w-5 h-5 text-amber-600" />
-          Student Features (Planned for Phase 5 & 6)
+          Student Attendance Modules & Analytics
         </h3>
         <p className="text-xs sm:text-sm text-slate-500">
-          The following student portal features will be unlocked in Phase 5:
+          Real-time student attendance monitoring modules:
         </p>
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-          <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 space-y-1">
+          <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1">
             <span className="font-semibold text-slate-800 text-sm block">1. Subject Attendance Cards</span>
             <p className="text-xs text-slate-500">Real-time percentage gauges with color indicators (Green/Amber/Red).</p>
           </div>
-          <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 space-y-1">
+          <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1">
             <span className="font-semibold text-slate-800 text-sm block">2. Session History Timeline</span>
             <p className="text-xs text-slate-500">Date-wise logs of attended, absent, and late lectures.</p>
           </div>
-          <div className="p-4 rounded-xl border border-dashed border-slate-300 bg-slate-50/50 space-y-1">
+          <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/70 space-y-1">
             <span className="font-semibold text-slate-800 text-sm block">3. Notification Center</span>
             <p className="text-xs text-slate-500">Deficiency alerts with read/unread tracking.</p>
           </div>

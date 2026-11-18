@@ -213,7 +213,7 @@ export const SignUpPage = () => {
             Create Student Account
           </h2>
           <p className="text-sm text-slate-500">
-            Student Attendance and Notification System
+            CampusTrack Student Attendance Portal
           </p>
         </div>
 

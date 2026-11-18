@@ -87,10 +87,10 @@ export const LoginPage = () => {
             <GraduationCap className="w-8 h-8" />
           </div>
           <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Sign In to EduAttendance
+            Sign In to CampusTrack
           </h2>
           <p className="text-sm text-slate-500">
-            Student Attendance and Notification System
+            Student Attendance and Notification Portal
           </p>
         </div>
 
@@ -214,7 +214,7 @@ export const LoginPage = () => {
           {/* Quick Demo Credentials Widget */}
           <div className="pt-4 border-t border-slate-100 space-y-3">
             <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block text-center">
-              Quick Test Credentials
+              Quick Role Login (Demo Accounts)
             </span>
             <div className="grid grid-cols-3 gap-2">
               <button

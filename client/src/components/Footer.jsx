@@ -10,7 +10,7 @@ export const Footer = () => {
           <div>
             <h4 className="font-semibold text-slate-900 mb-2">{APP_CONFIG.name}</h4>
             <p className="text-slate-500 text-xs leading-relaxed">
-              Academic attendance management and early-warning notification system engineered for Software Engineering & Project Management.
+              Centralized academic attendance tracking, real-time analytics, and automated shortage notification system for higher education institutions.
             </p>
           </div>
           <div>
@@ -43,8 +43,8 @@ export const Footer = () => {
         </div>
 
         <div className="mt-8 pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400">
-          <p>© {new Date().getFullYear()} Student Attendance System. Software Engineering and Project Management.</p>
-          <p>Version {APP_CONFIG.version} • Status: Phase 1 Operational</p>
+          <p>© {new Date().getFullYear()} CampusTrack. All rights reserved.</p>
+          <p>Campus Attendance Management Portal • Version {APP_CONFIG.version}</p>
         </div>
       </div>
     </footer>

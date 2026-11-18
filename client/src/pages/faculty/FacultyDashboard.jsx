@@ -52,7 +52,7 @@ export const FacultyDashboard = () => {
         <div className="space-y-2">
           <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-xs font-semibold">
             <UserCheck className="w-3.5 h-3.5" />
-            <span>Faculty Portal • Phase 3 Connected</span>
+            <span>Faculty Portal • Academic Year 2026-2027</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
             Welcome, {user?.name || 'Faculty Member'}
@@ -111,7 +111,7 @@ export const FacultyDashboard = () => {
           <div className="text-xl font-extrabold text-slate-900 font-mono">
             {assignments.length} Course(s)
           </div>
-          <p className="text-xs text-slate-500">Authorized for attendance logging in Phase 4</p>
+          <p className="text-xs text-slate-500">Authorized for active session attendance marking</p>
         </div>
 
         <div className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-sm space-y-2">
@@ -119,7 +119,7 @@ export const FacultyDashboard = () => {
             <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Marking Engine</span>
             <Calendar className="w-5 h-5" />
           </div>
-          <div className="text-xl font-extrabold text-slate-900">Phase 4 Ready</div>
+          <div className="text-xl font-extrabold text-slate-900">Session Engine Ready</div>
           <p className="text-xs text-slate-500">Zero duplicate session conflict checking</p>
         </div>
       </div>

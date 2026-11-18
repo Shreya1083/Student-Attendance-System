@@ -63,9 +63,9 @@ export const AdminLayout = () => {
               <GraduationCap className="w-5 h-5" />
             </div>
             <div>
-              <span className="font-bold text-white text-base leading-tight block">EduAdmin</span>
+              <span className="font-bold text-white text-base leading-tight block">CampusTrack</span>
               <span className="text-[10px] text-brand-300 font-semibold tracking-wider uppercase block">
-                Management Portal
+                Admin Console
               </span>
             </div>
           </div>
@@ -136,7 +136,7 @@ export const AdminLayout = () => {
             </button>
             <div className="hidden sm:flex items-center space-x-2 text-xs font-semibold text-brand-600 bg-brand-50 px-2.5 py-1 rounded-full border border-brand-200">
               <ShieldCheck className="w-3.5 h-3.5" />
-              <span>SPM Academic Master Data System</span>
+              <span>Academic Administration & Master Data</span>
             </div>
           </div>
 

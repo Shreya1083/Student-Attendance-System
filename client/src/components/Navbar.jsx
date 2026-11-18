@@ -52,10 +52,10 @@ export const Navbar = () => {
             </div>
             <div>
               <span className="font-bold text-slate-900 text-lg leading-tight block">
-                EduAttendance
+                CampusTrack
               </span>
               <span className="text-xs text-slate-500 font-medium block">
-                SPM Micro-Project
+                College Academic Portal
               </span>
             </div>
           </Link>
@@ -92,15 +92,15 @@ export const Navbar = () => {
             ) : (
               <div className="flex items-center space-x-3">
                 <span className="hidden md:inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5 animate-pulse"></span>
-                  Phase 2 Verified
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 mr-1.5"></span>
+                  Academic Term 2026-27
                 </span>
                 <Link
                   to="/login"
                   className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-semibold shadow-sm transition-colors"
                 >
                   <LogIn className="w-4 h-4" />
-                  <span>Sign In</span>
+                  <span>Portal Sign In</span>
                 </Link>
               </div>
             )}

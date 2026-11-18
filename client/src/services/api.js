@@ -8,7 +8,7 @@ const api = axios.create({
   }
 });
 
-// Request interceptor (prepared for JWT injection in Phase 2)
+// Request interceptor for JWT authentication injection
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');

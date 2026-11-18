@@ -16,7 +16,7 @@
     "mongodb",
     "mongoose",
     "jwt",
-    "spm"
+    "portal"
   ],
   "author": "",
   "license": "ISC",

@@ -13,8 +13,8 @@ export const ATTENDANCE_STATUS = {
 export const DEFAULT_ATTENDANCE_THRESHOLD = 75;
 
 export const APP_CONFIG = {
-  name: 'Student Attendance & Notification System',
-  course: 'Software Engineering and Project Management (SPM)',
-  version: '1.0.0',
-  phase: 'Phase 1 - Toolchain & Scaffolding'
+  name: 'CampusTrack - Attendance Management System',
+  institution: 'Department of Computer Science & Engineering',
+  version: '2.4.0',
+  academicYear: '2026-2027'
 };
