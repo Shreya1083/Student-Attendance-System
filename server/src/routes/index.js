@@ -4,6 +4,7 @@ import authRoutes from './authRoutes.js';
 import testRoutes from './testRoutes.js';
 import adminRoutes from './adminRoutes.js';
 import facultyRoutes from './facultyRoutes.js';
+import attendanceRoutes from './attendanceRoutes.js';
 
 const router = Router();
 
@@ -21,5 +22,8 @@ router.use('/admin', adminRoutes);
 
 // Mount Faculty Endpoints: /api/v1/faculty
 router.use('/faculty', facultyRoutes);
+
+// Mount Attendance Session & Marking Engine: /api/v1/attendance
+router.use('/attendance', attendanceRoutes);
 
 export default router;

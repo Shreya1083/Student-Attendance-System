@@ -111,3 +111,55 @@ export const logout = async (req, res, next) => {
     next(error);
   }
 };
+
+export const register = async (req, res, next) => {
+  try {
+    const mongoose = (await import('mongoose')).default;
+    if (mongoose.connection.readyState !== 1) {
+      return errorResponse(res, {
+        statusCode: 503,
+        message: 'Database service is currently offline. Please ensure MongoDB is running to register.'
+      });
+    }
+
+    const result = await authService.registerStudent(req.body);
+
+    // Set secure HttpOnly cookie for browsers
+    res.cookie('token', result.token, getCookieOptions());
+
+    return successResponse(res, {
+      statusCode: 201,
+      message: 'Student account registered successfully',
+      data: result
+    });
+  } catch (error) {
+    if (error.statusCode) {
+      return errorResponse(res, {
+        statusCode: error.statusCode,
+        message: error.message
+      });
+    }
+    next(error);
+  }
+};
+
+export const getAcademicOptions = async (req, res, next) => {
+  try {
+    const mongoose = (await import('mongoose')).default;
+    if (mongoose.connection.readyState !== 1) {
+      return errorResponse(res, {
+        statusCode: 503,
+        message: 'Database service is currently offline.'
+      });
+    }
+
+    const options = await authService.getAcademicOptions();
+    return successResponse(res, {
+      statusCode: 200,
+      message: 'Academic options retrieved successfully',
+      data: options
+    });
+  } catch (error) {
+    next(error);
+  }
+};

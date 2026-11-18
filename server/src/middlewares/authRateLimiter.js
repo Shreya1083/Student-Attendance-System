@@ -1,12 +1,13 @@
 import rateLimit from 'express-rate-limit';
+import { env } from '../config/environment.js';
 
 /**
- * Strict rate limiter for authentication endpoints:
- * Enforces maximum 5 attempts per 15 minutes per IP.
+ * Rate limiter for authentication endpoints:
+ * Enforces maximum 5 attempts per 15 minutes in production, relaxed in development.
  */
 export const loginRateLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // Limit each IP to 5 requests per window
+  max: env.isDevelopment ? 1000 : 5,
   standardHeaders: true,
   legacyHeaders: false,
   message: {

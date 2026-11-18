@@ -6,6 +6,7 @@ import { AdminLayout } from './layouts/AdminLayout.jsx';
 import { ProtectedRoute } from './components/ProtectedRoute.jsx';
 import { LandingPage } from './pages/LandingPage.jsx';
 import { LoginPage } from './pages/LoginPage.jsx';
+import { SignUpPage } from './pages/SignUpPage.jsx';
 import { UnauthorizedPage } from './pages/UnauthorizedPage.jsx';
 import { NotFoundPage } from './pages/NotFoundPage.jsx';
 
@@ -22,6 +23,7 @@ import { SettingsManagement } from './pages/admin/SettingsManagement.jsx';
 
 // Role Dashboards
 import { FacultyDashboard } from './pages/faculty/FacultyDashboard.jsx';
+import { MarkAttendance } from './pages/faculty/MarkAttendance.jsx';
 import { StudentDashboard } from './pages/student/StudentDashboard.jsx';
 
 export default function App() {
@@ -33,11 +35,13 @@ export default function App() {
           <Route path="/" element={<RootLayout />}>
             <Route index element={<LandingPage />} />
             <Route path="login" element={<LoginPage />} />
+            <Route path="signup" element={<SignUpPage />} />
             <Route path="unauthorized" element={<UnauthorizedPage />} />
 
             {/* Protected Faculty Routes */}
             <Route element={<ProtectedRoute allowedRoles={['FACULTY']} />}>
               <Route path="faculty/dashboard" element={<FacultyDashboard />} />
+              <Route path="faculty/attendance" element={<MarkAttendance />} />
             </Route>
 
             {/* Protected Student Routes */}

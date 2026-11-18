@@ -19,10 +19,24 @@ export const defaultUsers = [
     isActive: true
   },
   {
+    name: 'Dr. Ramesh Kumar',
+    email: 'ramesh@attendance.edu',
+    password: 'Faculty@123456',
+    role: 'FACULTY',
+    isActive: true
+  },
+  {
     name: 'Dr. Jane Smith (Faculty)',
     email: 'faculty@attendance.edu',
     password: 'Faculty@123456',
     role: 'FACULTY',
+    isActive: true
+  },
+  {
+    name: 'Priya Sharma',
+    email: 'priya@attendance.edu',
+    password: 'Student@123456',
+    role: 'STUDENT',
     isActive: true
   },
   {
@@ -99,29 +113,48 @@ export const seedUsers = async () => {
     if (user.role === 'STUDENT' && user.isActive) studentUser = user;
   }
 
-  // 5. Link Faculty Profile
-  let facultyProfile = null;
-  if (facultyUser) {
-    facultyProfile = await Faculty.findOneAndUpdate(
-      { userId: facultyUser._id },
+  // 5. Link Faculty Profiles
+  const rameshUser = await User.findOne({ email: 'ramesh@attendance.edu' });
+  let rameshProfile = null;
+  if (rameshUser) {
+    rameshProfile = await Faculty.findOneAndUpdate(
+      { userId: rameshUser._id },
       {
-        userId: facultyUser._id,
+        userId: rameshUser._id,
         facultyCode: 'FAC-CSE-001',
+        department: 'CSE',
+        designation: 'Professor & HOD',
+        isActive: true
+      },
+      { upsert: true, new: true }
+    );
+    logger.info(`Faculty profile verified for: ${rameshProfile.facultyCode} (Dr. Ramesh Kumar)`);
+  }
+
+  const janeUser = await User.findOne({ email: 'faculty@attendance.edu' });
+  let janeProfile = null;
+  if (janeUser) {
+    janeProfile = await Faculty.findOneAndUpdate(
+      { userId: janeUser._id },
+      {
+        userId: janeUser._id,
+        facultyCode: 'FAC-CSE-002',
         department: 'CSE',
         designation: 'Associate Professor',
         isActive: true
       },
       { upsert: true, new: true }
     );
-    logger.info(`Faculty profile verified for: ${facultyProfile.facultyCode}`);
+    logger.info(`Faculty profile verified for: ${janeProfile.facultyCode} (Dr. Jane Smith)`);
   }
 
-  // 6. Link Student Profile
-  if (studentUser) {
-    const studentProfile = await Student.findOneAndUpdate(
-      { userId: studentUser._id },
+  // 6. Link Student Profiles
+  const priyaUser = await User.findOne({ email: 'priya@attendance.edu' });
+  if (priyaUser) {
+    const priyaProfile = await Student.findOneAndUpdate(
+      { userId: priyaUser._id },
       {
-        userId: studentUser._id,
+        userId: priyaUser._id,
         rollNumber: 'CSE24001',
         department: 'CSE',
         semester: 5,
@@ -131,22 +164,42 @@ export const seedUsers = async () => {
       },
       { upsert: true, new: true }
     );
-    logger.info(`Student profile verified for: ${studentProfile.rollNumber}`);
+    logger.info(`Student profile verified for: ${priyaProfile.rollNumber} (Priya Sharma)`);
   }
 
-  // 7. Seed Faculty Assignment (Assign Dr. Jane Smith to CS501 for CSE-5-A)
+  const johnUser = await User.findOne({ email: 'student@attendance.edu' });
+  if (johnUser) {
+    const johnProfile = await Student.findOneAndUpdate(
+      { userId: johnUser._id },
+      {
+        userId: johnUser._id,
+        rollNumber: 'CSE24002',
+        department: 'CSE',
+        semester: 5,
+        section: 'A',
+        academicYear: '2026-2027',
+        isActive: true
+      },
+      { upsert: true, new: true }
+    );
+    logger.info(`Student profile verified for: ${johnProfile.rollNumber} (John Doe)`);
+  }
+
+  // 7. Seed Faculty Assignments
   const cs501 = await Subject.findOne({ subjectCode: 'CS501' });
-  if (facultyProfile && cs501) {
+  const cs502 = await Subject.findOne({ subjectCode: 'CS502' });
+
+  if (rameshProfile && cs501) {
     await FacultyAssignment.findOneAndUpdate(
       {
-        facultyId: facultyProfile._id,
+        facultyId: rameshProfile._id,
         subjectId: cs501._id,
         academicYear: '2026-2027',
         semester: 5,
         section: 'A'
       },
       {
-        facultyId: facultyProfile._id,
+        facultyId: rameshProfile._id,
         subjectId: cs501._id,
         department: 'CSE',
         semester: 5,
@@ -156,7 +209,30 @@ export const seedUsers = async () => {
       },
       { upsert: true }
     );
-    logger.info(`Faculty Assignment verified: Dr. Jane Smith -> CS501 (CSE 5-A)`);
+    logger.info(`Faculty Assignment verified: Dr. Ramesh Kumar -> CS501 (CSE 5-A)`);
+  }
+
+  if (janeProfile && cs502) {
+    await FacultyAssignment.findOneAndUpdate(
+      {
+        facultyId: janeProfile._id,
+        subjectId: cs502._id,
+        academicYear: '2026-2027',
+        semester: 5,
+        section: 'A'
+      },
+      {
+        facultyId: janeProfile._id,
+        subjectId: cs502._id,
+        department: 'CSE',
+        semester: 5,
+        section: 'A',
+        academicYear: '2026-2027',
+        isActive: true
+      },
+      { upsert: true }
+    );
+    logger.info(`Faculty Assignment verified: Dr. Jane Smith -> CS502 (CSE 5-A)`);
   }
 
   logger.info('Master data and user seeding completed successfully.');

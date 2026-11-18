@@ -75,6 +75,27 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Student registration handler
+  const register = async (studentData) => {
+    setLoading(true);
+    setAuthError(null);
+    try {
+      const res = await api.post('/auth/register', studentData);
+      const { user: userData, token: jwtToken } = res.data;
+
+      localStorage.setItem('token', jwtToken);
+      setUser(userData);
+      setToken(jwtToken);
+      return { success: true, user: userData };
+    } catch (err) {
+      const message = err.message || 'Registration failed';
+      setAuthError(message);
+      throw new Error(message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Logout handler
   const logout = async () => {
     try {
@@ -115,6 +136,7 @@ export const AuthProvider = ({ children }) => {
     authError,
     isAuthenticated: !!user,
     login,
+    register,
     logout,
     changePassword,
     checkAuth,

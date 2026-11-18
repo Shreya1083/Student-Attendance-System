@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { Link } from 'react-router-dom';
 import { 
   UserCheck, 
   BookOpen, 
@@ -169,9 +170,13 @@ export const FacultyDashboard = () => {
 
                 <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-400">
                   <span>Year: {as.academicYear}</span>
-                  <span className="text-emerald-600 font-semibold flex items-center gap-1">
-                    Mark Attendance &rarr;
-                  </span>
+                  <Link
+                    to={`/faculty/attendance?assignmentId=${as._id}`}
+                    className="text-emerald-600 font-semibold flex items-center gap-1 hover:text-emerald-700 hover:underline"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Mark Attendance <ArrowRight className="w-3 h-3" />
+                  </Link>
                 </div>
               </div>
             ))}

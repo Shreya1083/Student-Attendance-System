@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation, Navigate } from 'react-router-dom';
+import { useNavigate, useLocation, Navigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext.jsx';
 import { 
   Lock, 
@@ -196,6 +196,19 @@ export const LoginPage = () => {
                 </>
               )}
             </button>
+
+            {/* Sign Up Link */}
+            <div className="text-center pt-2">
+              <p className="text-sm text-slate-600">
+                Don't have an account?{' '}
+                <Link
+                  to="/signup"
+                  className="font-semibold text-brand-600 hover:text-brand-700 hover:underline transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </p>
+            </div>
           </form>
 
           {/* Quick Demo Credentials Widget */}
