@@ -1,10 +1,6 @@
 pipeline {
     agent any
 
-    tools {
-        // Uses system Node.js and Git by default on Windows
-    }
-
     environment {
         CI = 'true'
     }
